@@ -24,7 +24,7 @@ Edit `server/src/agent.py`:
 - **VAD:** edit `turn_detection` dict (start/end mode, speech threshold, silence/interrupt durations).
 - **LLM:** change the `Gemini(...)` constructor; the default model is `gemini-3.6-flash`.
 - **STT:** change `GeminiSTT(...)`; the preview provider uses the standard `AsyncAgora` client.
-- **TTS:** change `MiniMaxTTS(...)`; the default is `en-US-Chirp3-HD-Charon`, `en-US`, 24000 Hz.
+- **TTS:** change `GeminiTTS(...)`; the default model is `gemini-3.8-flash-tts` with voice `Puck`.
 - **Credentials:** all three default providers reuse `GOOGLE_API_KEY`; add another env var only for an intentional alternate provider.
 - **Agent parameters:** edit `AgoraAgent(parameters=...)` and `advanced_features` for server-side RTM data channel, error messages, metrics, and tool flags.
 - **Session:** edit `create_async_session(...)` parameters (`idle_timeout`, `expires_in`, `enable_string_uid`).

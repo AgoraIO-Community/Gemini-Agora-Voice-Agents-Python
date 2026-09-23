@@ -1,16 +1,38 @@
 # Agora Conversational AI Python Quickstart
 
-Build and run a real-time voice agent with **GeminiSTT**, Gemini 3.6, and Agora-managed MiniMax TTS.
+## Gemini TTS preview variant
+
+**Current environment:** `gemini-3.8-flash-tts` greeting audio is verified in all three demos.
+
+This recipe uses the published Agora Agent Kit SDK **v2.11.0**.
+The pipeline is GeminiSTT → Gemini `gemini-3.6-flash` → Gemini 3.8 Flash TTS.
+All three stages use server-only `GOOGLE_API_KEY`. AgentSession automatically uses
+`agora-feature: gemini-live` and the preview endpoint for start and subsequent
+session operations. Keep the retained session for stopping the agent.
+
+Set these optional values in `server/.env.local`:
+
+```dotenv
+GEMINI_TTS_MODEL=gemini-3.8-flash-tts
+GEMINI_TTS_VOICE=Puck
+GEMINI_TTS_STYLE="warm and reassuring"
+```
+
+Use `GEMINI_TTS_MODEL=gemini-3.8-flash-tts` and restart the backend after configuration changes.
+SDK dependencies are pinned to v2.11.0; no sibling SDK checkout is required.
+Gemini TTS remains a preview provider within the released SDK.
+
+Build and run a real-time voice agent with **GeminiSTT**, Gemini 3.6, and Gemini TTS preview.
 
 This project includes a Next.js web client and a Python FastAPI backend. The browser connects to Agora RTC and RTM, while the backend creates and manages the Conversational AI agent session.
 
 ## Pipeline
 
 ```text
-Microphone -> GeminiSTT -> Gemini 3.6 LLM -> MiniMax TTS -> Browser
+Microphone -> GeminiSTT -> Gemini 3.6 LLM -> Gemini TTS -> Browser
 ```
 
-Gemini ASR and Gemini LLM use the same Google API key. MiniMax TTS is managed by Agora and does not require a separate TTS credential.
+Gemini ASR, Gemini LLM, and Gemini TTS use the same Google API key. Gemini TTS uses the same server-only Google API key through the preview SDK.
 
 ## Prerequisites
 
@@ -25,8 +47,8 @@ Gemini ASR and Gemini LLM use the same Google API key. MiniMax TTS is managed by
 ### 1. Clone the repository
 
 ```bash
-git clone https://github.com/AgoraIO-Conversational-AI/agent-quickstart-python.git
-cd agent-quickstart-python
+git clone https://github.com/AgoraIO-Community/Gemini-Agora-Voice-Agents-Python.git
+cd Gemini-Agora-Voice-Agents-Python
 ```
 
 ### 2. Install and sign in to the Agora CLI
@@ -84,18 +106,35 @@ The backend reads configuration from `server/.env.local`.
 | --- | :---: | --- |
 | `AGORA_APP_ID` | Yes | Agora project App ID. |
 | `AGORA_APP_CERTIFICATE` | Yes | Server-only certificate used to create RTC and RTM tokens. |
-| `GOOGLE_API_KEY` | Yes | Google API key used by GeminiSTT and Gemini 3.6. |
+| `GOOGLE_API_KEY` | Yes | Google API key used by GeminiSTT, Gemini 3.6, and Gemini TTS. |
 | `AGENT_GREETING` | No | Overrides the default opening message. |
+| `GEMINI_TTS_MODEL` | No | TTS model; defaults to `gemini-3.8-flash-tts`. |
+| `GEMINI_TTS_VOICE` | No | Default Gemini TTS voice; defaults to `Puck`. |
+| `GEMINI_TTS_STYLE` | No | Optional description of the speaking style. |
 | `PORT` | No | FastAPI port. Defaults to `8000`. |
 
 The source template is [`server/.env.example`](server/.env.example).
+
+## Voice selection and cues
+
+Choose from all 30 Gemini voices before starting; Puck is the default. The selected
+voice applies to that session. API callers that omit `ttsVoice` use
+`GEMINI_TTS_VOICE` or Puck. End the conversation to choose another voice.
+
+The prompt describes the Gemini ASR/LLM/TTS pipeline and selected voice and model.
+It permits occasional performance cues. The transcript view hides known cues in
+agent messages, including incomplete streamed cues; raw transcript events and TTS
+input stay unchanged. The **Show cues** toggle displays cues in the transcript.
+Streaming cue interpretation by the preview TTS has not been verified.
+
+The agent introduces itself as **Gemini** in the prompt and default greeting.
 
 ## How it works
 
 1. The browser requests a channel, UID, and RTC/RTM token from FastAPI.
 2. The browser joins Agora RTC and RTM and publishes microphone audio.
 3. FastAPI starts a Conversational AI agent in the channel.
-4. GeminiSTT transcribes the user, Gemini 3.6 generates the response, and MiniMax TTS produces the agent audio.
+4. GeminiSTT transcribes the user, Gemini 3.6 generates the response, and Gemini TTS produces the agent audio.
 5. Transcript, agent state, and pipeline metrics are delivered to the browser over RTM.
 
 The browser uses stable `/api/*` paths. In local development, Next.js rewrites those requests to FastAPI through `AGENT_BACKEND_URL`.
@@ -126,7 +165,7 @@ AGENT_BACKEND_URL=http://localhost:8000 bun run dev
 
 ### No transcript or audio appears
 
-Check the browser console for the agent connection and confirm that microphone permission was granted. The pipeline panel displays the latest Gemini ASR, Gemini LLM, and MiniMax TTS latency metrics when those events arrive.
+Check the browser console for the agent connection and confirm that microphone permission was granted. The pipeline panel displays the latest Gemini ASR, Gemini LLM, and Gemini TTS latency metrics when those events arrive.
 
 ## Project structure
 

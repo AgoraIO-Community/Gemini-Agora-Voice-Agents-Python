@@ -61,7 +61,7 @@ server/                   # Python FastAPI backend
   src/
     __init__.py
     server.py             # FastAPI app + APIRouter routes
-    agent.py              # Agent class: standard client; GeminiSTT → Gemini → MiniMaxTTS; retained-session start/stop
+    agent.py              # Agent class: standard client; GeminiSTT → Gemini → GeminiTTS; retained-session start/stop
   scripts/
     run_fake_server.py    # Patches Agent to a FakeAgent for smoke tests
 ```

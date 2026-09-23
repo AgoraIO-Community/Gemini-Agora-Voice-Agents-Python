@@ -15,7 +15,7 @@ type QuickstartPipelineMetricsProps = {
 const PIPELINE = [
 	{ key: "stt", label: "Gemini ASR", metricTypes: ["stt", "asr"] },
 	{ key: "llm", label: "Gemini LLM", metricTypes: ["llm", "mllm"] },
-	{ key: "tts", label: "MiniMax TTS", metricTypes: ["tts"] },
+	{ key: "tts", label: "Gemini TTS", metricTypes: ["tts"] },
 ] as const;
 
 function formatMetricName(name: string) {

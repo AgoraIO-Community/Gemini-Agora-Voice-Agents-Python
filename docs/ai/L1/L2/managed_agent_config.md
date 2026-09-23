@@ -8,13 +8,14 @@ All managed agent configuration is in `server/src/agent.py`. The browser sends `
 
 ## The Agent Builder Chain
 
-The standard `AsyncAgora` client is constructed once. All three provider stages reuse `GOOGLE_API_KEY`; Gemini LLM and MiniMaxTTS are Google-backed rather than Agora-managed.
+The standard `AsyncAgora` client is constructed once. All three provider stages reuse `GOOGLE_API_KEY`; Gemini LLM and GeminiTTS are Google-backed rather than Agora-managed.
 
 ```python
 from agora_agent import Area, AsyncAgora
 from agora_agent.agentkit import Agent as AgoraAgent
 from agora_agent.agentkit.preview import GeminiSTT
-from agora_agent.agentkit.vendors import Gemini, MiniMaxTTS
+from agora_agent.agentkit.vendors import Gemini
+from agora_agent.agentkit.preview import GeminiTTS
 
 self.client = AsyncAgora(
     area=Area.US,
@@ -49,11 +50,11 @@ agora_agent = AgoraAgent(
     max_output_tokens=1024,
     temperature=0.7,
     top_p=0.95,
-)).with_tts(MiniMaxTTS(
-    key=self.google_api_key,
-    voice_name="en-US-Chirp3-HD-Charon",
-    language_code="en-US",
-    sample_rate_hertz=24000,
+)).with_tts(GeminiTTS(
+    api_key=self.google_api_key,
+    model="gemini-3.8-flash-tts",
+    voice="Puck",
+    style="warm and reassuring",
 ))
 ```
 
@@ -78,7 +79,7 @@ Edit the `turn_detection` dict on `AgoraAgent`. The shape uses a `"config"` wrap
 
 ### Swap STT / LLM / TTS
 
-The defaults are `GeminiSTT` (`gemini-3.5-transcribe-live`), Gemini `gemini-3.6-flash`, and MiniMaxTTS (`en-US-Chirp3-HD-Charon`, `en-US`, 24000 Hz). They all reuse `GOOGLE_API_KEY`. Replace the corresponding constructor only for an intentional provider change, and document any new credential in `server/.env.example`.
+The defaults are `GeminiSTT` (`gemini-3.5-transcribe-live`), Gemini `gemini-3.6-flash`, and GeminiTTS (`gemini-3.8-flash-tts`, voice `Puck`). They all reuse `GOOGLE_API_KEY`. Replace the corresponding constructor only for an intentional provider change, and document any new credential in `server/.env.example`.
 
 Gemini custom vocabulary and word timestamps are incompatible. Keep `word_timestamp=False` explicit whenever `custom_vocabulary` is configured; the SDK rejects `word_timestamp=True` with a custom vocabulary.
 
@@ -135,7 +136,7 @@ bun run verify:web:api
 | ------------------------------------------------------ | ---------------------------------------------------------------------- |
 | Routes return `500 Service not properly configured`    | Missing `AGORA_APP_ID`, `AGORA_APP_CERTIFICATE`, or `GOOGLE_API_KEY`; `Agent()` raises `ValueError` at import and `agent` stays `None`. |
 | `400` from `/startAgent` on a valid request            | `Agent.start` raised `ValueError` — usually missing UID fields.         |
-| Agent joins but never speaks                           | `GOOGLE_API_KEY` missing/invalid or MiniMaxTTS voice settings changed incorrectly. |
+| Agent joins but never speaks                           | `GOOGLE_API_KEY` missing/invalid or GeminiTTS voice settings changed incorrectly. |
 | Agent state stuck in `IDLE`                            | `enable_rtm` missing from `advanced_features` or RTM not subscribed yet. |
 | Transcript fragments arrive but no metrics             | `parameters.enable_metrics` not set.                                     |
 | Import error on `from agora_agent.agentkit import ...` | SDK version mismatch; `pip install -r server/requirements.txt`.          |

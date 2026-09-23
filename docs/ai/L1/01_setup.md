@@ -53,7 +53,7 @@ AGENT_BACKEND_URL=http://localhost:8000
 | ------------------------ | -------------------- | -------- | --------------------------------------------------------------------- |
 | `AGORA_APP_ID`           | Python (server)      | Yes      | Loaded by `Agent.__init__` via `os.environ`.                          |
 | `AGORA_APP_CERTIFICATE`  | Python (server)      | Yes      | Server-only.                                                          |
-| `GOOGLE_API_KEY`         | Python (server)      | Yes      | Reused by GeminiSTT, Gemini LLM, and MiniMaxTTS; server-only.          |
+| `GOOGLE_API_KEY`         | Python (server)      | Yes      | Reused by GeminiSTT, Gemini LLM, and GeminiTTS; server-only.          |
 | `AGENT_GREETING`         | Python (server)      | No       | Optional first utterance.                                             |
 | `PORT`                   | Python (server)      | No       | Default `8000` (`server.py`).                                          |
 | `AGENT_BACKEND_URL`      | Next build (web)     | Yes for rewrites | Empty/missing → no `/api/*` rewrites registered. Required by `web/scripts/doctor.ts`. |
@@ -68,7 +68,7 @@ fastapi>=0.100.0
 uvicorn>=0.20.0
 requests>=2.31.0
 python-dotenv>=1.0.0
-agora-agents>=2.7.2
+agora-agents==2.11.0
 ```
 
 The SDK is lower-bounded at v2 — add an upper bound or exact pin if you need reproducible SDK behavior.

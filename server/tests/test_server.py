@@ -105,3 +105,9 @@ def test_lazy_agent_initialization_keeps_config_available(client, server_module,
         == 500
     )
     assert client.post("/stopAgent", json={"agentId": "x"}).status_code == 200
+
+
+def test_start_agent_forwards_voice(client):
+    response = client.post("/startAgent", json={"channelName": "ch", "rtcUid": 111, "userUid": 222, "ttsVoice": "Kore"})
+    assert response.status_code == 200
+    assert client.fake_agent.tts_voice == "Kore"

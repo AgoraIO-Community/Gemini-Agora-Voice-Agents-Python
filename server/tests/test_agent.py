@@ -27,7 +27,12 @@ def test_agent_constructs_with_full_env(fake_env):
     assert instance.client is not None
 
 
-def test_start_wires_google_providers_and_returns_shape(fake_env, monkeypatch):
+@pytest.mark.parametrize("model", ["gemini-3.8-flash-tts"])
+@pytest.mark.parametrize("voice", [None, "Kore", "Zephyr"])
+def test_start_wires_google_providers_and_returns_shape(fake_env, monkeypatch, model, voice):
+    monkeypatch.setenv("GEMINI_TTS_MODEL", model)
+    monkeypatch.delenv("GEMINI_TTS_VOICE", raising=False)
+    monkeypatch.delenv("GEMINI_TTS_STYLE", raising=False)
     agent = _fresh_agent_module()
     captured = {}
 
@@ -51,7 +56,7 @@ def test_start_wires_google_providers_and_returns_shape(fake_env, monkeypatch):
     monkeypatch.setattr(AgoraAgent, "create_async_session", fake_create_async_session)
 
     instance = agent.Agent()
-    result = asyncio.run(instance.start(channel_name="ch", agent_uid=111, user_uid=222))
+    result = asyncio.run(instance.start(channel_name="ch", agent_uid=111, user_uid=222, tts_voice=voice))
 
     assert result == {
         "agent_id": "test-agent-id",
@@ -65,7 +70,8 @@ def test_start_wires_google_providers_and_returns_shape(fake_env, monkeypatch):
     assert captured["llm"]["params"]["model"] == "gemini-3.6-flash"
     assert captured["llm"]["style"] == "gemini"
     assert captured["llm"]["system_messages"][0]["role"] == "user"
-    assert captured["tts"]["vendor"] == "minimax"
+    assert captured["tts"] == {"vendor": "gemini", "params": {
+        "api_key": "google-api-key", "model": model, "voice": voice or "Puck", "style": "warm and reassuring"}}
     assert captured["channel"] == "ch"
     assert captured["remote_uids"] == ["222"]
 

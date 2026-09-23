@@ -39,7 +39,7 @@
   - `agora-agent-client-toolkit` and `agora-agent-uikit` for transcript, state, metrics, and visualizer UI
 - Backend service:
   - Python FastAPI owns token generation and agent lifecycle through `agora-agents`
-- Third-party services: Agora-hosted agent session using GeminiSTT (preview), Gemini LLM, and MiniMaxTTS with the backend `GOOGLE_API_KEY`
+- Third-party services: Agora-hosted agent session using GeminiSTT, Gemini LLM, and GeminiTTS with the backend `GOOGLE_API_KEY`
 
 ## 5. Module Responsibilities & Directory Structure
 

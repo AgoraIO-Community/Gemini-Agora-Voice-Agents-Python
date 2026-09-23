@@ -26,9 +26,9 @@ Why: provider schemas, SDK builder fields, token behavior, and RTM event details
 Implement these pieces in order:
 
 1. Create a bun workspace with `web` as a workspace member and root scripts that orchestrate backend, frontend, setup, doctor, verify, and clean tasks.
-2. Create `server/` with FastAPI, uvicorn, python-dotenv, and `agora-agents>=2.7.2` in `server/requirements.txt`.
+2. Create `server/` with FastAPI, uvicorn, python-dotenv, and `agora-agents==2.11.0` in `server/requirements.txt`.
 3. Add `server/.env.example` with `AGORA_APP_ID`, `AGORA_APP_CERTIFICATE`, required `GOOGLE_API_KEY`, optional `AGENT_GREETING`, and optional `PORT`.
-4. Implement `server/src/agent.py` with an `Agent` class that reads env once, constructs standard `AsyncAgora`, builds `AgoraAgent` with GeminiSTT (`gemini-3.5-transcribe-live`), Gemini (`gemini-3.6-flash`), and MiniMaxTTS (`en-US-Chirp3-HD-Charon`, `en-US`, 24000 Hz), reuses `GOOGLE_API_KEY` for every provider, starts async sessions, stores sessions by `agent_id`, and stops only through the retained session.
+4. Implement `server/src/agent.py` with an `Agent` class that reads env once, constructs standard `AsyncAgora`, builds `AgoraAgent` with GeminiSTT (`gemini-3.5-transcribe-live`), Gemini (`gemini-3.6-flash`), and GeminiTTS (`gemini-3.8-flash-tts`, voice `Puck`), reuses `GOOGLE_API_KEY` for every provider, starts async sessions, stores sessions by `agent_id`, and stops only through the retained session.
 5. Implement `server/src/server.py` with `GET /get_config`, `POST /startAgent`, and `POST /stopAgent`; load env file-relative from `server/.env.local` then `server/.env`.
 6. In `GET /get_config`, replace missing, zero, or negative UIDs with a generated non-zero UID, generate a one-hour RTC+RTM token with `generate_convo_ai_token`, and return `{ app_id, token, uid, channel_name, agent_uid }`.
 7. Create a Next.js App Router web app under `web/` with React, TypeScript, Tailwind, `agora-rtc-react`, `agora-rtm`, `agora-agent-client-toolkit`, and `agora-agent-uikit`.

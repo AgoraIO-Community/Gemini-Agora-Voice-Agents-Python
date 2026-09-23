@@ -43,9 +43,9 @@ Frontend: POST /api/startAgent { channelName, rtcUid, userUid }
 
 ```
 User audio → RTC
-  → GeminiSTT `gemini-3.5-transcribe-live` (preview)
+  → GeminiSTT `gemini-3.5-transcribe-live`
   → Gemini `gemini-3.6-flash`
-  → managed MiniMax TTS
+  → Gemini TTS preview
   → Agent audio + RTM transcript events
   → UIKit transcript and visualizer in the web app
 ```
@@ -70,7 +70,7 @@ Frontend calls these as `/api/*`. Next rewrites those calls to `AGENT_BACKEND_UR
 
 ## Authentication
 
-Token007 (AccessToken2) is generated from `AGORA_APP_ID` + `AGORA_APP_CERTIFICATE`; the SDK handles Agora token generation and API auth through standard `AsyncAgora`. GeminiSTT and Gemini LLM reuse `GOOGLE_API_KEY`; MiniMax TTS is managed by Agora.
+Token007 (AccessToken2) is generated from `AGORA_APP_ID` + `AGORA_APP_CERTIFICATE`; the SDK handles Agora token generation and API auth through standard `AsyncAgora`. GeminiSTT and Gemini LLM reuse `GOOGLE_API_KEY`; Gemini TTS uses the same Google API key through the preview endpoint.
 
 ## Detailed Documentation
 

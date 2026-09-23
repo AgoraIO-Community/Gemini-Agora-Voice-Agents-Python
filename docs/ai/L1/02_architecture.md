@@ -16,7 +16,7 @@
          │      │ RTM data                                                   │ HTTPS
          │ RTC  │                                                            ▼
          ▼      ▼                                                Agora Conversational AI
-   Agora media + RTM cloud                          (GeminiSTT → Gemini → MiniMaxTTS session)
+   Agora media + RTM cloud                          (GeminiSTT → Gemini → GeminiTTS session)
 ```
 
 ## Voice Session Lifecycle
@@ -74,9 +74,9 @@ If `AGENT_BACKEND_URL` is unset/empty, **no rewrites register** — the client c
 
 | Stage | Vendor       | Config highlights                                                          |
 | ----- | ------------ | -------------------------------------------------------------------------- |
-| STT   | `GeminiSTT` | `gemini-3.5-transcribe-live` (preview), `language_codes=["en-US"]`             |
+| STT   | `GeminiSTT` | `gemini-3.5-transcribe-live`, `language_codes=["en-US"]`             |
 | LLM   | `Gemini`    | `model="gemini-3.6-flash"`, greeting/failure overrides, history settings      |
-| TTS   | `MiniMaxTTS` | `en-US-Chirp3-HD-Charon`, `en-US`, sample rate 24000                               |
+| TTS | `GeminiTTS` | `gemini-3.8-flash-tts`, voice `Puck`, natural-language `style` |
 | VAD   | Agora        | Tunable `turn_detection` dict with start/end mode and timing thresholds    |
 
 Agent parameters: `data_channel="rtm"`, `enable_error_message=True`, `enable_metrics=True`. Advanced features: `{"enable_rtm": True, "enable_tools": True}`. Session options: `enable_string_uid=False`, `idle_timeout=30`, `expires_in=3600`.
@@ -92,3 +92,23 @@ Agent parameters: `data_channel="rtm"`, `enable_error_message=True`, `enable_met
 - [Managed Agent Config](L2/managed_agent_config.md) — Full `agent.py` chain and tunable fields.
 - [Session Lifecycle](L2/session_lifecycle.md) — Detailed client orchestration including renewal.
 - [Verification Scripts](L2/verification_scripts.md) — How the contract harness asserts the proxy boundary.
+
+
+### Voice selection
+
+Choose a voice before starting a conversation. The selector lists all 30 Gemini
+voice names and defaults to Puck. The selected voice is sent as optional
+`ttsVoice` in the start request and applies to that session only. API callers
+that omit it retain the `GEMINI_TTS_VOICE` environment default (or Puck).
+End the conversation to choose another voice.
+
+The prompt describes the Gemini ASR/LLM/TTS pipeline and the session's selected
+voice and model. It permits occasional performance cues. The transcript view
+hides only known cues in agent messages (including incomplete streaming cues);
+raw toolkit events and TTS input remain unchanged. Streaming cue interpretation
+by the preview TTS has not been verified.
+
+The transcript header includes a **Show cues** toggle, off by default. It changes
+only rendered agent text and never modifies TTS input or raw transcript events.
+
+The agent introduces itself as **Gemini** in the prompt and default greeting.

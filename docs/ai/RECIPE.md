@@ -43,7 +43,7 @@ This base recipe provides a copyable split-process starter with:
 - Python FastAPI token generation and managed agent lifecycle.
 - Next.js browser UI with RTC audio, RTM events, transcript, metrics, and connection status.
 - Rewrite-only `/api/*` browser facade that hides backend placement.
-- Default GeminiSTT (preview) → Gemini LLM → managed MiniMaxTTS configuration using one Google key.
+- Default GeminiSTT → Gemini LLM → GeminiTTS configuration using one Google key.
 - Contract and local smoke verification that do not require live Agora calls.
 
 ## Baseline Implementation Guidance
@@ -57,7 +57,7 @@ Do not recreate Agora ConvoAI integration from memory. Provider schemas, SDK bui
 | ID | Surface | How to extend | Required follow-up |
 | -- | ------- | ------------- | ------------------ |
 | `api.routes` | `server/src/server.py`, `web/next.config.ts`, `web/src/services/api.ts` | Add FastAPI route, add rewrite, add browser fetch helper. | Extend `web/scripts/verify-api-contracts.ts`; add smoke coverage if the route belongs in local verification. |
-| `agent.managed-config` | `server/src/agent.py` | Change `ADA_PROMPT`, `AGENT_GREETING`, `turn_detection`, `GeminiSTT`, `Gemini`, `MiniMaxTTS`, `parameters`, or session options. | Preserve shared `GOOGLE_API_KEY` and the standard `AsyncAgora` client; document intentional new env vars. |
+| `agent.managed-config` | `server/src/agent.py` | Change `ADA_PROMPT`, `AGENT_GREETING`, `turn_detection`, `GeminiSTT`, `Gemini`, `GeminiTTS`, `parameters`, or session options. | Preserve shared `GOOGLE_API_KEY` and the standard `AsyncAgora` client; document intentional new env vars. |
 | `web.conversation-ui` | `web/src/components/*`, `web/src/lib/conversation.ts` | Customize pre-call, transcript, metrics, connection status, microphone, or visualizer UI. | Preserve RTC/RTM lifecycle ownership and transcript UID normalization. |
 | `verification.contracts` | `web/scripts/*.ts`, root `package.json` | Add contract checks for new browser/backend boundaries. | Keep checks runnable without live Agora credentials where possible. |
 

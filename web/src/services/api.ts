@@ -34,8 +34,8 @@ export async function getConfig(options?: { channel?: string; uid?: string | num
   return result.data
 }
 
-export async function startAgent(channelName: string, rtcUid: number, userUid: number): Promise<string> {
-  const payload = { channelName, rtcUid, userUid }
+export async function startAgent(channelName: string, rtcUid: number, userUid: number, ttsVoice?: string): Promise<string> {
+  const payload = { channelName, rtcUid, userUid, ttsVoice }
 
   const response = await fetch(`${API_BASE_URL}/startAgent`, {
     method: 'POST',

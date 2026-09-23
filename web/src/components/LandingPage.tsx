@@ -19,7 +19,10 @@ const ConversationComponent = dynamic(
 	},
 );
 
-function waitForRtmConnected(rtmClient: RTMClient, timeoutMs = 600): Promise<void> {
+function waitForRtmConnected(
+	rtmClient: RTMClient,
+	timeoutMs = 600,
+): Promise<void> {
 	return new Promise((resolve) => {
 		let settled = false;
 		let timer: ReturnType<typeof setTimeout> | null = null;
@@ -65,7 +68,9 @@ const AgoraProvider = dynamic(
 		return {
 			default: function AgoraProviders({
 				children,
-			}: { children: React.ReactNode }) {
+			}: {
+				children: React.ReactNode;
+			}) {
 				const clientRef = useRef<ReturnType<
 					typeof AgoraRTC.createClient
 				> | null>(null);
@@ -87,6 +92,7 @@ const AgoraProvider = dynamic(
 );
 
 export default function LandingPage() {
+	const [voice, setVoice] = useState("Puck");
 	const [showConversation, setShowConversation] = useState(false);
 	const [agoraData, setAgoraData] = useState<AgoraTokenData | null>(null);
 	const [rtmClient, setRtmClient] = useState<RTMClient | null>(null);
@@ -113,6 +119,7 @@ export default function LandingPage() {
 					config.channel_name,
 					Number(config.agent_uid),
 					Number(config.uid),
+					voice,
 				).catch((err) => {
 					console.error("Failed to start conversation with agent:", err);
 					setAgentJoinError(true);
@@ -206,6 +213,8 @@ export default function LandingPage() {
 				>
 					{!showConversation ? (
 						<QuickstartPreCallCard
+							voice={voice}
+							onVoiceChange={setVoice}
 							isLoading={isLoading}
 							error={error}
 							onStartConversation={handleStartConversation}

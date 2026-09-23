@@ -1,6 +1,6 @@
 # Agent Development Guide
 
-This guide is for coding agents making changes in `agent-quickstart-python`.
+This guide is for coding agents making changes in `Gemini-Agora-Voice-Agents-Python`.
 
 ## How to Load
 
@@ -19,13 +19,19 @@ The sections below (Start Here, Patterns, Anti-Patterns, etc.) remain the canoni
 - Use [ARCHITECTURE.md](./ARCHITECTURE.md) for system-level request flow.
 - For layout and responsibilities inside `web/` vs `server/`, use [docs/ai/L1/03_code_map.md](docs/ai/L1/03_code_map.md) and [docs/ai/L1/02_architecture.md](docs/ai/L1/02_architecture.md).
 
+## Preview configuration
+
+Use the published Agora Agent Kit SDK v2.11.0. Gemini TTS shares the ASR/LLM Google key and uses the
+`gemini-live` gate. See README for `GEMINI_TTS_MODEL`, `GEMINI_TTS_VOICE`, and
+`GEMINI_TTS_STYLE`. Use the model ID `gemini-3.8-flash-tts`.
+
 ## Current System Shape
 
 - Frontend: Next.js 16, React 19, TypeScript, Tailwind CSS, `agora-rtc-react`, `agora-rtm`, `agora-agent-client-toolkit`, and `agora-agent-uikit`
 - Backend: Python FastAPI in `server`
 - Web API facade: Next rewrites in `web/next.config.ts`
 - Auth: Token007 generated from `AGORA_APP_ID` and `AGORA_APP_CERTIFICATE`
-- Default agent config: GeminiSTT (preview, `GOOGLE_API_KEY`) → Gemini `gemini-3.6-flash` → managed MiniMax TTS. MiniMax TTS remains a commented alternative.
+- Default agent config: GeminiSTT ( `GOOGLE_API_KEY`) → Gemini `gemini-3.6-flash` → Gemini TTS preview.
 
 ## Supported Modes
 
@@ -65,7 +71,7 @@ The sections below (Start Here, Patterns, Anti-Patterns, etc.) remain the canoni
 - Keep token generation behavior in the Python backend.
 - Keep RTC client creation StrictMode-safe.
 - Keep transcript speaker mapping based on actual UIDs, not heuristics.
-- Keep `GOOGLE_API_KEY` scoped to GeminiSTT and `GOOGLE_TTS_CREDENTIALS_JSON` scoped to MiniMaxTTS while testing the managed Gemini pipeline; retain the commented provider blocks as reversion paths.
+- Keep `GOOGLE_API_KEY` server-only and share it across Gemini ASR, LLM, and TTS.
 
 ## Working Rules
 
@@ -125,7 +131,7 @@ bun run verify
 
 - Do not reintroduce Next Route Handlers or `web/proxy.ts` for agent/token logic.
 - Do not assume Zustand or a separate client-side store exists.
-- Keep MiniMax TTS credentials in the separate server-only `GOOGLE_TTS_CREDENTIALS_JSON` variable; it must never be replaced by the Gemini API key.
+- Keep the Gemini API key server-only; TTS uses `GOOGLE_API_KEY`.
 - Do not move token generation into the web app.
 - Do not change `/api/*` ownership without updating README, architecture docs, root `AGENTS.md`, and the relevant `docs/ai/L1/` files.
 
@@ -174,3 +180,23 @@ Before finishing a change:
 | fix docs        | Close findings from a docs review or test run                |
 
 The generator and tester live in the [AgoraIO-Community/ai-devkit](https://github.com/AgoraIO-Community/ai-devkit) skill set. See the [progressive disclosure standard](https://github.com/AgoraIO-Community/ai-devkit/blob/main/docs/progressive-disclosure-standard.md) for the full specification.
+
+
+### Voice selection
+
+Choose a voice before starting a conversation. The selector lists all 30 Gemini
+voice names and defaults to Puck. The selected voice is sent as optional
+`ttsVoice` in the start request and applies to that session only. API callers
+that omit it retain the `GEMINI_TTS_VOICE` environment default (or Puck).
+End the conversation to choose another voice.
+
+The prompt describes the Gemini ASR/LLM/TTS pipeline and the session's selected
+voice and model. It permits occasional performance cues. The transcript view
+hides only known cues in agent messages (including incomplete streaming cues);
+raw toolkit events and TTS input remain unchanged. Streaming cue interpretation
+by the preview TTS has not been verified.
+
+The transcript header includes a **Show cues** toggle, off by default. It changes
+only rendered agent text and never modifies TTS input or raw transcript events.
+
+The agent introduces itself as **Gemini** in the prompt and default greeting.

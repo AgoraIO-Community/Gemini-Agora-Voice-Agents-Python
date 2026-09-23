@@ -87,6 +87,7 @@ class StartAgentRequest(BaseModel):
     channelName: str
     rtcUid: int
     userUid: int
+    ttsVoice: Optional[str] = None
     parameters: Optional[Dict[str, Any]] = None
 
 
@@ -158,6 +159,7 @@ async def start_agent(request: StartAgentRequest):
             agent_uid=request.rtcUid,
             user_uid=request.userUid,
             output_audio_codec=output_audio_codec,
+            tts_voice=request.ttsVoice,
         )
         return {"code": 0, "msg": "success", "data": result}
     except Exception as e:

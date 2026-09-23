@@ -10,14 +10,18 @@ from typing import Any, Dict, Optional
 
 from agora_agent import Area, AsyncAgora
 from agora_agent.agentkit import Agent as AgoraAgent
-from agora_agent.agentkit.preview import GeminiSTT
-from agora_agent.agentkit.vendors import Gemini, MiniMaxTTS
+from agora_agent.agentkit.preview import GeminiSTT, GeminiTTS
+from agora_agent.agentkit.vendors import Gemini
 
 logger = logging.getLogger("uvicorn.error")
 
-ADA_PROMPT = """You are Ada, an agentic developer advocate from Agora. You help developers understand and build with Agora's Conversational AI platform.
+AGENT_PROMPT = """You are Gemini, an agentic developer advocate from Agora. You help developers understand and build with Agora's Conversational AI platform.
 
 Agora is a real-time communications company. The product you represent is the Agora Conversational AI Engine.
+
+Your runtime setup: Agora orchestrates a cascading Gemini ASR -> Gemini LLM -> Gemini TTS voice pipeline. Gemini ASR transcribes the user's speech; you are the Gemini language model generating replies; Gemini TTS synthesizes them, and Agora delivers audio over RTC. This is not OpenAI or a Gemini Live native-audio session. Describe this setup accurately when asked, but do not recite it in every response. Do not claim access to raw audio, cameras, tools, or capabilities that this demo has not provided.
+
+For natural spoken delivery, you may sparingly include <laugh>, <breath>, <sigh>, or <short pause> in your reply when appropriate. These are performance directions for TTS, not words to explain to the user. Most replies need no cue; never add a cue to every sentence. Use <breath> and <short pause> only between complete sentences during a reply, never at the beginning or end. Start with spoken words unless opening laughter is appropriate; <laugh> may open a reply when it fits naturally.
 
 If you do not know a specific fact about Agora, say so plainly and suggest checking docs.agora.io. Keep most replies to one or two sentences unless the user explicitly asks for more detail.
 """
@@ -36,7 +40,7 @@ class Agent:
         self.app_certificate = os.getenv("AGORA_APP_CERTIFICATE")
         self.greeting = os.getenv(
             "AGENT_GREETING",
-            "Hi there! I'm Ada, your virtual assistant from Agora. How can I help?",
+            "Hi there! I'm Gemini, your virtual assistant from Agora. How can I help?",
         )
 
         self.google_api_key = os.getenv("GOOGLE_API_KEY")
@@ -61,6 +65,7 @@ class Agent:
         agent_uid: int,
         user_uid: int,
         output_audio_codec: Optional[str] = None,
+        tts_voice: Optional[str] = None,
     ) -> Dict[str, Any]:
         """Start agent with the same default vendor chain as the Next.js quickstart."""
         if not channel_name or not str(channel_name).strip():
@@ -70,10 +75,17 @@ class Agent:
         if user_uid <= 0:
             raise ValueError("user_uid is required and cannot be empty")
 
+        if tts_voice is not None and (not tts_voice.strip() or len(tts_voice) > 64):
+            raise ValueError("ttsVoice must be a nonempty string of at most 64 characters")
+
+        voice = tts_voice.strip() if tts_voice is not None else (os.getenv("GEMINI_TTS_VOICE") or "Puck")
+        tts_model = os.getenv("GEMINI_TTS_MODEL") or "gemini-3.8-flash-tts"
+        instructions = f"{AGENT_PROMPT}\nCurrent session: LLM model gemini-3.6-flash; TTS model {tts_model}; TTS voice {voice}."
+
         llm = Gemini(
             api_key=self.google_api_key,
             model="gemini-3.6-flash",
-            system_messages=[{"parts": [{"text": ADA_PROMPT}], "role": "user"}],
+            system_messages=[{"parts": [{"text": instructions}], "role": "user"}],
             greeting_message=self.greeting,
             failure_message="Please wait a moment.",
             max_history=15,
@@ -84,9 +96,11 @@ class Agent:
             custom_vocabulary=["Agora", "Gemini"],
             word_timestamp=False,
         )
-        tts = MiniMaxTTS(
-            model="speech_2_6_turbo",
-            voice_id="English_captivating_female1",
+        tts = GeminiTTS(
+            api_key=self.google_api_key,
+            model=tts_model,
+            voice=voice,
+            style=os.getenv("GEMINI_TTS_STYLE", "warm and reassuring"),
         )
 
         parameters = {
@@ -100,7 +114,7 @@ class Agent:
 
         agora_agent = AgoraAgent(
             client=self.client,
-            instructions=ADA_PROMPT,
+            instructions=instructions,
             greeting=self.greeting,
             failure_message="Please wait a moment.",
             turn_detection={

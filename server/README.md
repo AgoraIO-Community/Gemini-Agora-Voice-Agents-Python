@@ -76,7 +76,7 @@ agora project use my-first-voice-agent
 agora project env write .env.local
 ```
 
-**Note**: The service uses Token007 authentication generated from `AGORA_APP_ID` and `AGORA_APP_CERTIFICATE`. Its active pipeline is `GeminiSTT` (`gemini-3.5-transcribe-live`, preview) → Gemini (`gemini-3.6-flash`) → managed MiniMax TTS (`speech_2_6_turbo`). `GOOGLE_API_KEY` is used by both Gemini stages; no MiniMax TTS service-account credentials are required. Sessions start through standard `AsyncAgora`.
+**Note**: The service uses Token007 authentication generated from `AGORA_APP_ID` and `AGORA_APP_CERTIFICATE`. Its active pipeline is `GeminiSTT` (`gemini-3.5-transcribe-live`, preview) → Gemini (`gemini-3.6-flash`) → Gemini TTS preview (`gemini-3.8-flash-tts`). `GOOGLE_API_KEY` is used by both Gemini stages; no Gemini TTS service-account credentials are required. Sessions start through standard `AsyncAgora`.
 
 ### 2. Install Dependencies
 
@@ -141,9 +141,11 @@ The repo-level `bun run verify:local:fastapi` check exercises this FastAPI app t
 
 ## SDK
 
-This project uses `agora-agents` (import `agora_agent`):
+This project uses the published `agora-agents==2.11.0` package (import `agora_agent`):
 - Package: `agora_agent`
 - Agent builder: `agora_agent.agentkit.Agent` with fluent `.with_llm()` / `.with_tts()` / `.with_stt()` API
-- Providers: preview `GeminiSTT`, Gemini, and managed `MiniMaxTTS`; `GOOGLE_API_KEY` is used by both Gemini stages
-- The standard `AsyncAgora` client routes requests through the Conversational AI gateway
+- Providers: preview `GeminiSTT`, Gemini, and managed `GeminiTTS`; `GOOGLE_API_KEY` is used by both Gemini stages
+- The standard `AsyncAgora` client routes requests through the Conversational AI gateway, using the `gemini-live` feature header for Gemini TTS preview sessions
 - Token: `agora_agent.agentkit.token.generate_convo_ai_token`
+
+This demo uses the published Agora Agent Kit SDK v2.11.0. Gemini TTS is a preview provider; see the root README for model, voice, and style settings.

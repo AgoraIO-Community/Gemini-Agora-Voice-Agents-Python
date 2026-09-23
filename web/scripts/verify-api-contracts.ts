@@ -1,3 +1,4 @@
+import { hidePerformanceCues } from '../src/lib/performance-cues';
 import { existsSync, readdirSync } from 'node:fs'
 import path from 'node:path'
 
@@ -132,6 +133,7 @@ async function verifyApiClientRequests() {
       assert(body.channelName === 'test-channel', 'POST /api/startAgent should include channelName')
       assert(body.rtcUid === 9999, 'POST /api/startAgent should include rtcUid')
       assert(body.userUid === 1234, 'POST /api/startAgent should include userUid')
+      assert(body.ttsVoice === 'Kore', 'POST /api/startAgent should include the selected voice')
 
       return Response.json({
         code: 0,
@@ -158,7 +160,7 @@ async function verifyApiClientRequests() {
     const config = await getConfig({ uid: 1234, channel: 'test-channel' })
     assert(config.token === 'stub-token', 'GET /api/get_config should return response data')
 
-    const agentId = await startAgent('test-channel', 9999, 1234)
+    const agentId = await startAgent('test-channel', 9999, 1234, 'Kore')
     assert(agentId === 'mock-agent-id', 'POST /api/startAgent should return the agent id')
 
     await stopAgent(agentId)
@@ -173,6 +175,10 @@ async function verifyApiClientRequests() {
 }
 
 async function main() {
+  assert(hidePerformanceCues('Hello <laugh> there. [sighs]') === 'Hello there.', 'Hide known performance cues');
+  assert(hidePerformanceCues('Hello <short pa', true) === 'Hello', 'Hide streaming cue prefixes');
+  assert(hidePerformanceCues('Use <div> and [1].') === 'Use <div> and [1].', 'Preserve other markup');
+
   await verifyRewriteContract()
   await verifyRouteHandlersRemoved()
   await verifyApiClientRequests()

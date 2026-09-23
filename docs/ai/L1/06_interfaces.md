@@ -39,7 +39,7 @@ CORS middleware: `allow_origins=["*"]`, `allow_credentials=True`.
 | Next build             | `AGENT_BACKEND_URL`                       |
 | Browser                | `NEXT_PUBLIC_AGENT_UID` (optional)        |
 
-`GOOGLE_API_KEY` is reused by GeminiSTT (preview), Gemini `gemini-3.6-flash`, and MiniMaxTTS; no additional default-provider env vars are needed. Sessions start through the standard `AsyncAgora` client.
+`GOOGLE_API_KEY` is reused by GeminiSTT, Gemini `gemini-3.6-flash`, and GeminiTTS; no additional default-provider env vars are needed. Sessions start through the standard `AsyncAgora` client.
 
 `AGENT_BACKEND_URL` is a Next **server**-time env var (used inside `next.config.ts`), not a `NEXT_PUBLIC_*` value — do not prefix it.
 
@@ -72,8 +72,8 @@ agent = (
     AgoraAgent(...)
     .with_stt(GeminiSTT(api_key=google_api_key, language_codes=["en-US"]))
     .with_llm(Gemini(api_key=google_api_key, model="gemini-3.6-flash", ...))
-    .with_tts(MiniMaxTTS(key=google_api_key, voice_name="en-US-Chirp3-HD-Charon",
-                        language_code="en-US", sample_rate_hertz=24000))
+    .with_tts(GeminiTTS(api_key=google_api_key, model="gemini-3.8-flash-tts", voice="Puck",
+                        style="warm and reassuring"))
 )
 
 session = agora_agent.create_async_session(
@@ -116,3 +116,5 @@ agent_id = await session.start()
 
 - [Managed Agent Config](L2/managed_agent_config.md) — Detailed field reference.
 - [Verification Scripts](L2/verification_scripts.md) — How the contracts above are enforced by local pre-ship checks.
+
+Optional server-only preview controls: `GEMINI_TTS_MODEL`, `GEMINI_TTS_VOICE`, `GEMINI_TTS_STYLE`. Defaults: `gemini-3.8-flash-tts`, `Puck`, `warm and reassuring`.
